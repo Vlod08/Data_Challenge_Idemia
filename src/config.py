@@ -78,12 +78,12 @@ PATHS = _build_paths()
 BATCH_SIZE = 16
 EPOCHS = 50
 NUM_WORKERS = 0 if os.name == "nt" else 4
-USE_AMP = False
 LEARNING_RATE = 2e-4
 WEIGHT_DECAY = 1e-4  # L2 Regularization
 VAL_SPLIT = 0.2
 IN_CHANNELS = 3
 MODELS_DIR = PATHS.models_dir
+RANDOM_SEED = 42
 
 
 def _to_jsonable(value: Any) -> Any:
@@ -185,22 +185,22 @@ def parse_args():
     parser.add_argument("--output-dir", type=str, default=PATHS.models_dir)
     parser.add_argument("--experiment-name", type=str, required=True, help="Unique name for this training run (used for saving models and logs)")
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE)
+    parser.add_argument("--img-size", type=int, nargs=2, default=(224, 224))
     parser.add_argument("--epochs", type=int, default=EPOCHS)
     parser.add_argument("--num-workers", type=int, default=NUM_WORKERS)
-    parser.add_argument("--amp", action=argparse.BooleanOptionalAction, default=USE_AMP,
-                        help="Use CUDA automatic mixed precision when training on NVIDIA GPUs")
     parser.add_argument("--lr", default=LEARNING_RATE, type=float32 )
     parser.add_argument("--dry-run", action="store_true",
                         help="Validate paths, file pairing, shapes, and resource settings without training")
     parser.add_argument("--weight-decay", default=WEIGHT_DECAY, type=float32)
     parser.add_argument("--val-split", default=VAL_SPLIT, type=float)
-    parser.add_argument("--in_channels", default=IN_CHANNELS, type=int)
+    parser.add_argument("--in-channels", default=IN_CHANNELS, type=int)
     parser.add_argument(
         "--resume-checkpoint",
         type=str,
         default=None,
         help="Path to a full training checkpoint to resume from.",
     )
+    parser.add_argument("--random-seed", type=int, default=RANDOM_SEED)
 
 
     return parser.parse_args()
