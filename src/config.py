@@ -8,9 +8,6 @@ from pathlib import Path
 import argparse
 from typing import Any, Mapping
 
-from numpy import float32
-
-
 
 def _load_env_file(path: Path) -> None:
     if not path.exists():
@@ -33,7 +30,8 @@ def _find_project_root() -> Path:
     return current
 
 
-PROJECT_ROOT = Path(os.getenv("DATA_CHALLENGE_IDEMIA", _find_project_root())).resolve()
+PROJECT_ROOT = Path(os.getenv("DATA_CHALLENGE_IDEMIA",
+                    _find_project_root())).resolve()
 _load_env_file(PROJECT_ROOT / ".env")
 PROJECT_ROOT = Path(os.getenv("DATA_CHALLENGE_IDEMIA", PROJECT_ROOT)).resolve()
 
@@ -50,7 +48,8 @@ class ProjectPaths:
 
 
 def _build_paths() -> ProjectPaths:
-    data_dir = Path(os.getenv("DATA_CHALLENGE_IDEMIA_DATA_DIR", PROJECT_ROOT / "data")).resolve()
+    data_dir = Path(os.getenv("DATA_CHALLENGE_IDEMIA_DATA_DIR",
+                    PROJECT_ROOT / "data")).resolve()
     artifacts_dir = PROJECT_ROOT / "artifacts"
     models_dir = artifacts_dir / "models"
 
@@ -58,8 +57,9 @@ def _build_paths() -> ProjectPaths:
         project_root=PROJECT_ROOT,
         data_dir=data_dir,
         train_catalog_path=Path(data_dir / "occlusion_datasets" / "train.csv"),
-        test_catalog_path=Path(data_dir / "occlusion_datasets" / "test_students.csv"),
-        crops_dir=Path(data_dir / "crops"),
+        test_catalog_path=Path(
+            data_dir / "occlusion_datasets" / "test_students.csv"),
+        crops_dir=Path(data_dir / "occlusion_datasets" / "Crop_224_5fp_100K"),
         artifacts_dir=artifacts_dir,
         models_dir=models_dir,
     )
@@ -131,7 +131,8 @@ def save_model_artifacts(
     try:
         import torch
     except ImportError as exc:
-        raise RuntimeError("PyTorch is required to save model artifacts.") from exc
+        raise RuntimeError(
+            "PyTorch is required to save model artifacts.") from exc
 
     output_dir = Path(output_dir or PATHS.models_dir)
     experiment_name = experiment_name or datetime.now().strftime("run_%Y%m%d_%H%M%S")
@@ -178,20 +179,19 @@ def save_model_artifacts(
 
 def parse_args():
 
-    
-
     parser = argparse.ArgumentParser(description="Datachallenge train parser")
     parser.add_argument("--model-type", type=str, required=True)
     parser.add_argument("--output-dir", type=str, default=PATHS.models_dir)
-    parser.add_argument("--experiment-name", type=str, required=True, help="Unique name for this training run (used for saving models and logs)")
+    parser.add_argument("--experiment-name", type=str, required=True,
+                        help="Unique name for this training run (used for saving models and logs)")
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE)
     parser.add_argument("--img-size", type=int, nargs=2, default=(224, 224))
     parser.add_argument("--epochs", type=int, default=EPOCHS)
     parser.add_argument("--num-workers", type=int, default=NUM_WORKERS)
-    parser.add_argument("--lr", default=LEARNING_RATE, type=float32 )
+    parser.add_argument("--lr", default=LEARNING_RATE, type=float)
     parser.add_argument("--dry-run", action="store_true",
                         help="Validate paths, file pairing, shapes, and resource settings without training")
-    parser.add_argument("--weight-decay", default=WEIGHT_DECAY, type=float32)
+    parser.add_argument("--weight-decay", default=WEIGHT_DECAY, type=float)
     parser.add_argument("--val-split", default=VAL_SPLIT, type=float)
     parser.add_argument("--in-channels", default=IN_CHANNELS, type=int)
     parser.add_argument(
@@ -201,6 +201,5 @@ def parse_args():
         help="Path to a full training checkpoint to resume from.",
     )
     parser.add_argument("--random-seed", type=int, default=RANDOM_SEED)
-
 
     return parser.parse_args()

@@ -1,68 +1,66 @@
 import torch
 import torch.nn as nn
-
 from typing import Literal
-from PIL import Image
 from torchvision import transforms
 from torchvision.transforms import InterpolationMode
 
-
 DINOV2_VARIANT = Literal[
-    "dinov2_vits14",
-    "dinov2_vitb14",
-    "dinov2_vitl14",
-    "dinov2_vitg14",
-    "dinov2_vits14_reg",
-    "dinov2_vitb14_reg",
-    "dinov2_vitl14_reg",
-    "dinov2_vitg14_reg",
+    "dinov2_vits14", "dinov2_vitb14", "dinov2_vitl14", "dinov2_vitg14",
+    "dinov2_vits14_reg", "dinov2_vitb14_reg", "dinov2_vitl14_reg", "dinov2_vitg14_reg",
 ]
 
+IMAGENET_MEAN = (0.485, 0.456, 0.406)
+IMAGENET_STD = (0.229, 0.224, 0.225)
 
-def default_dinov2_transform():
+
+def default_dinov2_transform(img_size: int = 224):
     return transforms.Compose([
-        transforms.Resize(256, interpolation=InterpolationMode.BICUBIC),
-        transforms.CenterCrop(224),
+        transforms.Resize((img_size, img_size),
+                          interpolation=InterpolationMode.BICUBIC),
         transforms.ToTensor(),
-        transforms.Normalize(
-            mean=(0.485, 0.456, 0.406),
-            std=(0.229, 0.224, 0.225),
-        ),
+        transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
     ])
 
 
-class Dinov2(nn.Module):
-    def __init__(
-        self,
-        model_name: DINOV2_VARIANT = "dinov2_vits14",
-        device: str = "cuda",
-        transform=None,
-        freeze: bool = True,
-    ):
+class Dinov2Backbone(nn.Module):
+    def __init__(self, model_name: DINOV2_VARIANT = "dinov2_vits14", freeze: bool = True):
         super().__init__()
-
         self.model_name = model_name
-        self.device = torch.device(device if torch.cuda.is_available() else "cpu")
-        self.transform = transform 
+        self.freeze = freeze
+        self.model = torch.hub.load("facebookresearch/dinov2", model_name)
+        self.embed_dim = self.model.embed_dim
+        if freeze:
+            for p in self.model.parameters():
+                p.requires_grad = False
+            self.model.eval()
 
-        self.model = torch.hub.load(
-            "facebookresearch/dinov2",
-            self.model_name,
+    def train(self, mode: bool = True):
+        super().train(mode)
+        if self.freeze:
+            self.model.eval()  # garde le backbone gelé en eval même en mode train
+        return self
+
+    def forward(self, x):
+        if self.freeze:
+            with torch.no_grad():
+                return self.model(x)
+        return self.model(x)
+
+
+class Dinov2Regressor(nn.Module):
+    def __init__(self, model_name: DINOV2_VARIANT = "dinov2_vits14",
+                 freeze_backbone: bool = True, hidden_dim: int = 256, dropout: float = 0.2):
+        super().__init__()
+        self.backbone = Dinov2Backbone(model_name, freeze=freeze_backbone)
+        d = self.backbone.embed_dim
+        self.head = nn.Sequential(
+            nn.LayerNorm(d),
+            nn.Linear(d, hidden_dim),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim, 1),
         )
 
-        self.model = self.model.to(self.device)
-        self.model.eval()
-
-        if freeze:
-            for param in self.model.parameters():
-                param.requires_grad = False
-
-    def forward(self, X): 
-        # X : B, C, H, W
-        
-        X = X.to(self.device)
-        if self.transform is not None:
-            X = self.transform(X)
-        X = X.to(self.device)
-
-        return self.model(X)
+    def forward(self, x):
+        feat = self.backbone(x)
+        return torch.sigmoid(self.head(feat).squeeze(-1))  # borné dans [0, 1]
