@@ -35,7 +35,7 @@ class Image_Dataset(Dataset):
         if self.transform is not None:
             return self.transform(img)
         img = img.resize(self.img_size)
-        return torch.from_numpy(np.asarray(img)).permute(2, 0, 1).float() / 255.0
+        return torch.from_numpy(np.array(img)).permute(2, 0, 1).float() / 255.0
 
     def __getitem__(self, index):
         row = self.catalog.iloc[index]

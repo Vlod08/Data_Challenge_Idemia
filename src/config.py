@@ -59,7 +59,7 @@ def _build_paths() -> ProjectPaths:
         train_catalog_path=Path(data_dir / "occlusion_datasets" / "train.csv"),
         test_catalog_path=Path(
             data_dir / "occlusion_datasets" / "test_students.csv"),
-        crops_dir=Path(data_dir / "occlusion_datasets" / "Crop_224_5fp_100K"),
+        crops_dir=Path(data_dir / "crops"),
         artifacts_dir=artifacts_dir,
         models_dir=models_dir,
     )

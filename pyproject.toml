@@ -13,6 +13,8 @@ dependencies = [
     "torch>=2.4 ; sys_platform == 'darwin'",
     "torchvision>=0.26.0 ; sys_platform == 'linux'",
     "torchvision>=0.19 ; sys_platform == 'darwin'",
+    "lightgbm>=4.6.0",
+    "xgboost>=3.2.0",
 ]
 
 [tool.uv]
