@@ -80,9 +80,7 @@ def main():
     sampler = None
     if cfg.sampler != "none":
         sampler = build_weighted_sampler(
-            train_df, gender_balance=True,
-            occ_power=cfg.occ_power if cfg.sampler == "gender_occ" else 0.0,
-            seed=cfg.seed)
+            train_df, mode=cfg.sampler, occ_power=cfg.occ_power, seed=cfg.seed)
 
     g = torch.Generator().manual_seed(cfg.seed)
     train_loader = DataLoader(

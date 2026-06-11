@@ -31,8 +31,8 @@ class TrainConfig:
     img_size: int = 224
     val_split: float = 0.2
     augment: bool = True
-    sampler: str = "gender"            # none | gender | gender_occ
-    occ_power: float = 0.5             # tail oversampling (gender_occ only)
+    sampler: str = "none"              # none | gender | occ | gender_occ | cell
+    occ_power: float = 0.5             # sampler strength (occ / gender_occ / cell)
 
     # optimisation
     loss: str = "balanced"            # balanced | wmse
