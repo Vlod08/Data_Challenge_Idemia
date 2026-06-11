@@ -35,19 +35,23 @@ is selected on the **validation Score**.
 Runs are configured by a YAML file (`configs/`), with optional CLI overrides.
 
 ```bash
-# LoRA on ViT-B (registers)
-uv run python scripts/train.py --config configs/lora_vitb.yaml
+# LoRA ViT-B ablation (plain -> +sampler -> +aug/TTA)
+uv run python scripts/train.py --config configs/lora_b_plain.yaml
+uv run python scripts/train.py --config configs/lora_b_sampler.yaml
+uv run python scripts/train.py --config configs/lora_b_full.yaml
 
 # Full fine-tuning ViT-L
-uv run python scripts/train.py --config configs/full_vitl.yaml
+uv run python scripts/train.py --config configs/full_l.yaml
 
 # Quick edits without touching the YAML
-uv run python scripts/train.py --config configs/lora_vitb.yaml \
+uv run python scripts/train.py --config configs/lora_b_full.yaml \
     --override epochs=10 backbone_lr=5e-5
 
 # Fast local smoke test (subsampled data, 2 epochs, cuda or mps)
-uv run python scripts/train.py --config configs/lora_vitb.yaml --debug
+uv run python scripts/train.py --config configs/lora_b_full.yaml --debug
 ```
+
+Each non-debug run writes its own `submission.csv` (best checkpoint).
 
 All hyperparameters are fields of `TrainConfig`
 (`src/occlusion/ml/run_config.py`): `finetune_mode {frozen,lora,full}`,

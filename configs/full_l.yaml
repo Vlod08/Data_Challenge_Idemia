@@ -1,0 +1,27 @@
+# Full fine-tuning ViT-L, best recipe. The other main candidate vs LoRA.
+experiment_name: full_l
+seed: 42
+device: auto
+
+model_type: dinov2_vitl14_reg
+finetune_mode: full
+
+img_size: 224
+val_split: 0.2
+augment: true
+sampler: gender_occ
+occ_power: 0.5
+
+loss: balanced
+epochs: 12               # full FT overfits faster than LoRA
+batch_size: 48           # safe on 40GB; raise to 128 on 80GB (and scale LR)
+head_lr: 1.0e-4
+backbone_lr: 1.0e-5      # low: preserve pretrained features
+weight_decay: 5.0e-2     # higher WD regularises full FT (2-D weights only)
+scheduler: cosine
+warmup_frac: 0.05
+grad_accum: 1
+clip_grad: 1.0           # gradient clipping helps full FT
+amp: true
+num_workers: 8
+tta: true

@@ -1,0 +1,32 @@
+# Ablation 3/3 — LoRA ViT-B full recipe: sampler + augmentation + TTA.
+# Best LoRA candidate.
+experiment_name: lora_b_full
+seed: 42
+device: auto
+
+model_type: dinov2_vitb14_reg
+finetune_mode: lora
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_targets: [qkv, proj]
+
+img_size: 224
+val_split: 0.2
+augment: true            # hflip + photometric jitter (label-preserving)
+sampler: gender_occ
+occ_power: 0.5
+
+loss: balanced
+epochs: 20
+batch_size: 64
+head_lr: 1.0e-3
+backbone_lr: 2.0e-4
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_frac: 0.05
+grad_accum: 1
+clip_grad: 0.0
+amp: true
+num_workers: 8
+tta: true                # average prediction over image + horizontal flip
