@@ -1,0 +1,31 @@
+# Full fine-tuning of DINOv2 ViT-L (with registers). Needs a large GPU.
+experiment_name: full_vitl
+seed: 42
+device: auto
+
+# --- model ---
+model_type: dinov2_vitl14_reg
+finetune_mode: full
+
+# --- data ---
+img_size: 224
+val_split: 0.2
+augment: true
+sampler: gender
+occ_power: 0.5
+
+# --- optimisation ---
+loss: balanced
+epochs: 12                # full FT overfits faster -> fewer epochs than LoRA
+batch_size: 48            # ViT-L; raise on 80GB and scale LR accordingly
+head_lr: 1.0e-4
+backbone_lr: 1.0e-5       # low: do not destroy pretrained features
+weight_decay: 5.0e-2      # higher WD helps full FT regularisation (2-D weights only)
+scheduler: cosine
+warmup_frac: 0.05
+grad_accum: 1
+clip_grad: 1.0            # full FT benefits from gradient clipping
+amp: true
+
+# --- inference ---
+tta: true

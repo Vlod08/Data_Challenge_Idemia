@@ -1,0 +1,35 @@
+# LoRA fine-tuning of DINOv2 ViT-B (with registers).
+experiment_name: lora_vitb
+seed: 42
+device: auto              # auto | cuda | mps | cpu
+
+# --- model ---
+model_type: dinov2_vitb14_reg
+finetune_mode: lora
+lora_r: 16               # rank; 8-16 is typical for regression
+lora_alpha: 32           # scaling = alpha/r = 2.0
+lora_dropout: 0.05
+lora_targets: [qkv, proj]  # attention matrices; add fc1,fc2 for more capacity
+
+# --- data ---
+img_size: 224
+val_split: 0.2
+augment: true            # label-preserving: hflip + photometric jitter
+sampler: gender          # none | gender | gender_occ
+occ_power: 0.5           # tail oversampling (gender_occ only); keep <= 0.5
+
+# --- optimisation ---
+loss: balanced           # per-gender weighted MSE (targets the Score)
+epochs: 20               # pretrained backbone converges fast; best-on-val is kept
+batch_size: 64           # raise to 128-256 on a big GPU AND scale LR (~sqrt rule)
+head_lr: 1.0e-3          # fresh MLP head
+backbone_lr: 2.0e-4      # LoRA adapters (randomly initialised -> higher than full FT)
+weight_decay: 1.0e-4     # 2-D weights only; 0.01-0.05 is also reasonable
+scheduler: cosine
+warmup_frac: 0.05
+grad_accum: 1
+clip_grad: 0.0
+amp: true                # mixed precision (CUDA only)
+
+# --- inference ---
+tta: true                # average prediction over image + horizontal flip

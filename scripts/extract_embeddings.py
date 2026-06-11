@@ -1,22 +1,20 @@
-import os
+"""Extract frozen DINOv2 embeddings (fast head-only pipeline).
+
+  uv run python scripts/extract_embeddings.py --model-type dinov2_vits14
+"""
+from __future__ import annotations
+
 import argparse
+import os
+
 import torch
 from torch.utils.data import DataLoader
 
-from src import config
-from src import utils
-from src.ml.core.dataset import Image_Dataset
-from src.ml.models.dinov2 import Dinov2Backbone, default_dinov2_transform
-
-PATHS = config.PATHS
-
-
-def get_device():
-    if torch.cuda.is_available():
-        return "cuda"
-    if torch.backends.mps.is_available():
-        return "mps"
-    return "cpu"
+from occlusion import utils
+from occlusion.config import PATHS
+from occlusion.ml.core import engine
+from occlusion.ml.core.dataset import Image_Dataset
+from occlusion.ml.models.dinov2 import Dinov2Backbone, default_dinov2_transform
 
 
 @torch.no_grad()
@@ -48,11 +46,11 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model-type", default="dinov2_vits14")
     p.add_argument("--batch-size", type=int, default=64)
-    p.add_argument("--num-workers", type=int, default=0)
+    p.add_argument("--num-workers", type=int, default=8)
     p.add_argument("--img-size", type=int, default=224)
     args = p.parse_args()
 
-    device = get_device()
+    device = engine.get_device()
     print(f"device: {device}")
     transform = default_dinov2_transform(img_size=args.img_size)
     backbone = Dinov2Backbone(args.model_type, freeze=True).to(device)
@@ -60,21 +58,18 @@ def main():
     out_dir = os.path.join(PATHS.artifacts_dir, "embeddings", args.model_type)
     os.makedirs(out_dir, exist_ok=True)
 
-    train_cat = utils.load_catalog_csv(PATHS.train_catalog_path)
-    train_loader = DataLoader(
-        Image_Dataset(catalog=train_cat, mode="Train", transform=transform),
-        batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
-    print("extracting train embeddings...")
-    torch.save(extract(backbone, train_loader, device, True),
-               os.path.join(out_dir, "train.pt"))
-
-    test_cat = utils.load_catalog_csv(PATHS.test_catalog_path)
-    test_loader = DataLoader(
-        Image_Dataset(catalog=test_cat, mode="Test", transform=transform),
-        batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
-    print("extracting test embeddings...")
-    torch.save(extract(backbone, test_loader, device, False),
-               os.path.join(out_dir, "test.pt"))
+    for split, cat_path, has_labels in (
+        ("train", PATHS.train_catalog_path, True),
+        ("test", PATHS.test_catalog_path, False),
+    ):
+        cat = utils.load_catalog_csv(cat_path)
+        loader = DataLoader(
+            Image_Dataset(catalog=cat, mode="Train" if has_labels else "Test",
+                          transform=transform),
+            batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
+        print(f"extracting {split} embeddings...")
+        torch.save(extract(backbone, loader, device, has_labels),
+                   os.path.join(out_dir, f"{split}.pt"))
 
     print(f"saved to {out_dir}")
 
