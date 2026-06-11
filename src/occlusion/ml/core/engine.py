@@ -130,7 +130,7 @@ def predict_catalog(model, catalog, device, transform, *, batch_size, num_worker
         if tta:  # average prediction over image + horizontal flip
             out = 0.5 * (out + model(torch.flip(images, dims=[3])))
         out = out.float().cpu().numpy()
-        rows.extend({"filename": fn, "FaceOcclusion": float(p), "gender": 0.0}
+        rows.extend({"filename": fn, "FaceOcclusion": float(p), "gender": "x"}
                     for fn, p in zip(filenames, out))
     return pd.DataFrame(rows, columns=["filename", "FaceOcclusion", "gender"])
 

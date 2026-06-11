@@ -38,7 +38,7 @@ def parse_args():
     p = argparse.ArgumentParser(description="Train regression head on embeddings")
     p.add_argument("--experiment-name", required=True)
     p.add_argument("--model-type", default="dinov2_vits14")
-    p.add_argument("--loss", choices=["balanced", "wmse"], default="balanced")
+    p.add_argument("--loss", choices=["balanced", "wmse", "dro"], default="balanced")
     p.add_argument("--epochs", type=int, default=50)
     p.add_argument("--batch-size", type=int, default=512)
     p.add_argument("--lr", type=float, default=2e-4)
@@ -127,7 +127,7 @@ def main():
     tb = torch.load(os.path.join(emb_dir, "test.pt"))
     with torch.no_grad():
         pt = torch.sigmoid(head(tb["embeddings"].to(device)).squeeze(-1)).cpu().numpy()
-    pd.DataFrame({"filename": tb["filenames"], "FaceOcclusion": pt, "gender": 0.0},
+    pd.DataFrame({"filename": tb["filenames"], "FaceOcclusion": pt, "gender": "x"},
                  columns=["filename", "FaceOcclusion", "gender"]).to_csv(
         os.path.join(exp_dir, "submission.csv"), index=False)
 

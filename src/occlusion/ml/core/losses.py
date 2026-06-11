@@ -32,9 +32,25 @@ class GenderBalancedWeightedMSELoss(nn.Module):
         return torch.stack(errs).mean()
 
 
+class WorstGroupWeightedMSELoss(nn.Module):
+    """Minimise the worse gender's weighted MSE (hard worst-group / DRO).
+    Directly targets the disparity term that dominates the Score."""
+
+    def __init__(self, offset: float = 1.0 / 30.0):
+        super().__init__()
+        self.offset = offset
+
+    def forward(self, pred, target, gender):
+        errs = [_weighted_mse(pred[gender == g], target[gender == g], self.offset)
+                for g in (0., 1.) if (gender == g).any()]
+        return torch.stack(errs).max()
+
+
 def build_loss(name: str = "balanced", offset: float = 1.0 / 30.0) -> nn.Module:
     if name == "balanced":
         return GenderBalancedWeightedMSELoss(offset)
     if name == "wmse":
         return WeightedMSELoss(offset)
+    if name == "dro":
+        return WorstGroupWeightedMSELoss(offset)
     raise ValueError(f"unknown loss: {name}")
