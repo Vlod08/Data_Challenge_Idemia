@@ -12,7 +12,7 @@ import json
 import os
 
 import torch
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from torch.utils.data import DataLoader
 
 from occlusion import utils
@@ -67,8 +67,13 @@ def main():
     # --- data ---
     catalog = utils.load_catalog_csv(PATHS.train_catalog_path)
     strat = utils.make_stratify_labels(catalog)
-    train_df, val_df = train_test_split(
-        catalog, test_size=cfg.val_split, random_state=cfg.seed, stratify=strat)
+    if cfg.n_folds > 0:
+        skf = StratifiedKFold(n_splits=cfg.n_folds, shuffle=True, random_state=cfg.seed)
+        train_idx, val_idx = list(skf.split(catalog, strat))[cfg.fold]
+        train_df, val_df = catalog.iloc[train_idx], catalog.iloc[val_idx]
+    else:
+        train_df, val_df = train_test_split(
+            catalog, test_size=cfg.val_split, random_state=cfg.seed, stratify=strat)
     if cfg.debug:
         train_df, val_df = train_df.iloc[:512], val_df.iloc[:256]
 
@@ -82,15 +87,17 @@ def main():
         sampler = build_weighted_sampler(
             train_df, mode=cfg.sampler, occ_power=cfg.occ_power, seed=cfg.seed)
 
+    persistent = cfg.num_workers > 0  # keep workers alive across epochs
     g = torch.Generator().manual_seed(cfg.seed)
     train_loader = DataLoader(
         train_ds, batch_size=cfg.batch_size, sampler=sampler,
         shuffle=(sampler is None), num_workers=cfg.num_workers,
         worker_init_fn=engine.seed_worker, generator=g, drop_last=True,
-        pin_memory=(device == "cuda"))
+        pin_memory=(device == "cuda"), persistent_workers=persistent)
     val_loader = DataLoader(
         val_ds, batch_size=max(cfg.batch_size, 128), shuffle=False,
-        num_workers=cfg.num_workers, pin_memory=(device == "cuda"))
+        num_workers=cfg.num_workers, pin_memory=(device == "cuda"),
+        persistent_workers=persistent)
 
     # --- model ---
     model = Dinov2Regressor(
@@ -128,7 +135,8 @@ def main():
     utils.append_run_index({
         "experiment": cfg.experiment_name, "model": cfg.model_type,
         "finetune_mode": cfg.finetune_mode, "loss": cfg.loss,
-        "sampler": cfg.sampler, "augment": cfg.augment, "epochs": cfg.epochs,
+        "sampler": cfg.sampler, "augment": cfg.augment,
+        "n_folds": cfg.n_folds, "fold": cfg.fold, "epochs": cfg.epochs,
         "batch_size": cfg.batch_size, "head_lr": cfg.head_lr,
         "backbone_lr": cfg.backbone_lr, "best_val_score": round(best, 6),
         "err_g0": round(best_metrics.get("err_g0", float("nan")), 6),

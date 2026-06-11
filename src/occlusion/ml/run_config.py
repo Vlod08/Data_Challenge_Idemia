@@ -29,7 +29,9 @@ class TrainConfig:
 
     # data
     img_size: int = 224
-    val_split: float = 0.2
+    val_split: float = 0.2             # used only when n_folds == 0
+    n_folds: int = 0                   # 0 = single split; K = K-fold CV
+    fold: int = 0                      # which fold is validation (0..n_folds-1)
     augment: bool = True
     sampler: str = "none"              # none | gender | occ | gender_occ | cell
     occ_power: float = 0.5             # sampler strength (occ / gender_occ / cell)
