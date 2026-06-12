@@ -1,0 +1,35 @@
+# A/B test: linear head (clamp at inference) vs the sigmoid baseline.
+# Identical to the best sweep run (sweep_lora_b_plain_04) and same seed, so the
+# ONLY difference is head_activation -> clean comparison on val.
+# Baseline to compare against: sweep_lora_b_plain_04 (sigmoid, same HPs).
+experiment_name: lora_b_linear
+seed: 42
+device: auto
+
+model_type: dinov2_vitb14_reg
+finetune_mode: lora
+head_activation: linear   # <-- the only change vs the sigmoid baseline
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_targets: [qkv, proj]
+
+img_size: 224
+val_split: 0.2
+augment: false
+sampler: none
+occ_power: 0.5
+
+loss: balanced
+epochs: 20
+batch_size: 128
+head_lr: 1.0e-3
+backbone_lr: 4.0e-4
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_frac: 0.05
+grad_accum: 1
+clip_grad: 0.0
+amp: true
+num_workers: 16
+tta: false

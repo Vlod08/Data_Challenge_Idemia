@@ -22,6 +22,7 @@ class TrainConfig:
     finetune_mode: str = "lora"        # frozen | lora | full
     hidden_dim: int = 256
     head_dropout: float = 0.2
+    head_activation: str = "sigmoid"   # sigmoid (bounded) | linear (clamp at inference)
     lora_r: int = 16
     lora_alpha: int = 32
     lora_dropout: float = 0.05

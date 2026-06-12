@@ -86,7 +86,9 @@ def _apply_lora(model: nn.Module, r: int, alpha: int, dropout: float,
 
 
 class Dinov2Regressor(nn.Module):
-    """DINOv2 + regression head, bounded to [0, 1] by a sigmoid.
+    """DINOv2 + a single-output head. head_activation="sigmoid" bounds the output
+    to [0, 1]; "linear" returns the raw value (clamped to [0, 1] at inference).
+    The sigmoid output doubles as P(class=1) for the gender classifier.
 
     finetune_mode:
       - "frozen": backbone frozen, only the head learns (no_grad forward).
@@ -100,6 +102,7 @@ class Dinov2Regressor(nn.Module):
         finetune_mode: FinetuneMode = "frozen",
         hidden_dim: int = 256,
         dropout: float = 0.2,
+        head_activation: str = "sigmoid",
         lora_r: int = 16,
         lora_alpha: int = 32,
         lora_dropout: float = 0.05,
@@ -108,6 +111,7 @@ class Dinov2Regressor(nn.Module):
         super().__init__()
         self.model_name = model_name
         self.finetune_mode = finetune_mode
+        self.head_activation = head_activation
 
         backbone = torch.hub.load("facebookresearch/dinov2", model_name)
         self.embed_dim = backbone.embed_dim
@@ -148,7 +152,10 @@ class Dinov2Regressor(nn.Module):
 
     def forward(self, x):
         feat = self._features(x)
-        return torch.sigmoid(self.head(feat).squeeze(-1))
+        out = self.head(feat).squeeze(-1)
+        # "linear" returns the raw output (clamped to [0,1] only at inference,
+        # see engine.evaluate / predict_catalog) so gradients are not saturated.
+        return torch.sigmoid(out) if self.head_activation == "sigmoid" else out
 
     def param_groups(self, backbone_lr: float, head_lr: float,
                      weight_decay: float = 0.0):

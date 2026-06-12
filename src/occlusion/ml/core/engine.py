@@ -114,7 +114,8 @@ def evaluate(model, loader, device) -> dict:
         preds.append(model(images.to(device)).float().cpu())
         targets.append(occ)
         genders.append(gender)
-    return challenge_score(torch.cat(preds), torch.cat(targets), torch.cat(genders))
+    # clamp to the valid occlusion range (no-op for the sigmoid head, needed for linear)
+    return challenge_score(torch.cat(preds).clamp(0, 1), torch.cat(targets), torch.cat(genders))
 
 
 @torch.no_grad()
@@ -129,7 +130,7 @@ def predict_catalog(model, catalog, device, transform, *, batch_size, num_worker
         out = model(images)
         if tta:  # average prediction over image + horizontal flip
             out = 0.5 * (out + model(torch.flip(images, dims=[3])))
-        out = out.float().cpu().numpy()
+        out = out.clamp(0, 1).float().cpu().numpy()  # no-op for sigmoid, bounds the linear head
         rows.extend({"filename": fn, "FaceOcclusion": float(p), "gender": "x"}
                     for fn, p in zip(filenames, out))
     return pd.DataFrame(rows, columns=["filename", "FaceOcclusion", "gender"])

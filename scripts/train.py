@@ -103,6 +103,7 @@ def main():
     model = Dinov2Regressor(
         model_name=cfg.model_type, finetune_mode=cfg.finetune_mode,
         hidden_dim=cfg.hidden_dim, dropout=cfg.head_dropout,
+        head_activation=cfg.head_activation,
         lora_r=cfg.lora_r, lora_alpha=cfg.lora_alpha,
         lora_dropout=cfg.lora_dropout, lora_targets=cfg.lora_targets).to(device)
     print("params:", model.trainable_parameter_count())
