@@ -39,7 +39,10 @@ class BinaryGenderLoss(nn.Module):
         self.pos_weight = float(pos_weight)
 
     def forward(self, pred, occ, gender):
-        p = pred.clamp(1e-6, 1 - 1e-6)
+        # fp32 BCE: in fp16 (autocast) the clamp is a no-op -- 1-1e-6 rounds to 1.0
+        # and 1e-6 underflows, so log(0) -> -inf -> NaN. Upcast makes it safe.
+        p = pred.float().clamp(1e-6, 1 - 1e-6)
+        gender = gender.float()
         bce = -(gender * p.log() + (1 - gender) * (1 - p).log())
         if self.pos_weight == 1.0:
             return bce.mean()
