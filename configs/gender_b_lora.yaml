@@ -1,0 +1,32 @@
+# Binary gender classifier — DINOv2 ViT-B + LoRA.
+# Gender on aligned face crops is near-saturated; this just needs ~99% accuracy
+# and high precision on the g0 class for the post-hoc level-down step.
+experiment_name: gender_b_lora
+seed: 42
+device: auto
+
+model_type: dinov2_vitb14_reg
+finetune_mode: lora
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+lora_targets: [qkv, proj]
+
+img_size: 224
+val_split: 0.2
+augment: true            # hflip is label-preserving for gender (and helps)
+sampler: none            # 68/32 imbalance is mild; threshold tuning handles g0 precision
+
+loss: balanced           # ignored by train_gender.py (uses BCE); kept for schema
+epochs: 12               # converges fast on an easy task
+batch_size: 128
+head_lr: 1.0e-3
+backbone_lr: 2.0e-4
+weight_decay: 1.0e-4
+scheduler: cosine
+warmup_frac: 0.05
+grad_accum: 1
+clip_grad: 0.0
+amp: true
+num_workers: 16
+tta: false
