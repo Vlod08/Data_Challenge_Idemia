@@ -2,8 +2,8 @@
 with their key hyperparameters read from config.json. Use after a sweep to
 compare above the noise.
 
-  uv run python scripts/summarize.py --prefix sweep_
-  uv run python scripts/summarize.py --last 8
+  uv run scripts/summarize.py --prefix sweep_
+  uv run scripts/summarize.py --last 8
 """
 from __future__ import annotations
 

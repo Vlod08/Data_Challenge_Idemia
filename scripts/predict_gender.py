@@ -4,8 +4,8 @@ Reads the run's config.json + model_best.pth, runs inference over the test
 catalog, and writes artifacts/models/<run>/gender_pred.csv (filename, p_gender1).
 Consumed by the post-hoc level-down step.
 
-  uv run python scripts/predict_gender.py --run gender_b_lora
-  uv run python scripts/predict_gender.py --run gender_b_lora --tta
+  uv run scripts/predict_gender.py --run gender_b_lora
+  uv run scripts/predict_gender.py --run gender_b_lora --tta
 """
 from __future__ import annotations
 

@@ -9,13 +9,13 @@ predictions of the rows the gender classifier labels as the better group.
 Three stages (the dump stages need a GPU + the images; tune is pure pandas):
 
   # on the occlusion pod (uses that run's own val split):
-  uv run python scripts/level_down.py dump-occ --occ-run sweep_lora_b_plain_04
+  uv run scripts/level_down.py dump-occ --occ-run sweep_lora_b_plain_04
 
   # on the classifier pod (SAME split when both runs use seed=42, n_folds=0):
-  uv run python scripts/level_down.py dump-gender --gender-run gender_b_lora
+  uv run scripts/level_down.py dump-gender --gender-run gender_b_lora
 
   # anywhere (Mac): tune c on val, apply to the test submission:
-  uv run python scripts/level_down.py tune \
+  uv run scripts/level_down.py tune \
       --occ-val artifacts/models/sweep_lora_b_plain_04/occ_val.csv \
       --gender-val artifacts/models/gender_b_lora/gender_val.csv \
       --submission artifacts/models/ensemble/submission.csv \
@@ -23,9 +23,9 @@ Three stages (the dump stages need a GPU + the images; tune is pure pandas):
       --alphas 1.0 0.75 0.5
 
 For the ENSEMBLE, re-tune c on out-of-fold predictions (clean over 100% of train):
-  uv run python scripts/level_down.py dump-occ-oof --kfold-prefix kfold_lora_b_plain_f
-  uv run python scripts/level_down.py dump-gender --gender-run gender_b_lora --full
-  uv run python scripts/level_down.py tune \
+  uv run scripts/level_down.py dump-occ-oof --kfold-prefix kfold_lora_b_plain_f
+  uv run scripts/level_down.py dump-gender --gender-run gender_b_lora --full
+  uv run scripts/level_down.py tune \
       --occ-val   artifacts/models/kfold_lora_b_plain_foof_occ_val.csv \
       --gender-val artifacts/models/gender_b_lora/gender_all.csv \
       --submission artifacts/models/ensemble/submission.csv \

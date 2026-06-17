@@ -1,6 +1,6 @@
 """Extract frozen DINOv2 embeddings (fast head-only pipeline).
 
-  uv run python scripts/extract_embeddings.py --model-type dinov2_vits14
+  uv run scripts/extract_embeddings.py --model-type dinov2_vits14
 """
 from __future__ import annotations
 

@@ -1,8 +1,8 @@
 """End-to-end DINOv2 occlusion training (frozen / lora / full).
 
-  uv run python scripts/train.py --config configs/lora_vitb.yaml
-  uv run python scripts/train.py --config configs/lora_vitb.yaml --debug
-  uv run python scripts/train.py --config configs/lora_vitb.yaml \
+  uv run scripts/train.py --config configs/lora_vitb.yaml
+  uv run scripts/train.py --config configs/lora_vitb.yaml --debug
+  uv run scripts/train.py --config configs/lora_vitb.yaml \
       --override epochs=10 backbone_lr=5e-5
 """
 from __future__ import annotations

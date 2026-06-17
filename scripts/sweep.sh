@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Overnight HP sweep: one deliberate run per line in RUNS (edit freely).
 # A failed run does NOT abort the sweep. Each run saves history.csv + config.json.
-# Compare afterwards with: uv run python scripts/summarize.py --prefix sweep_
+# Compare afterwards with: uv run scripts/summarize.py --prefix sweep_
 #
 #   bash scripts/sweep.sh configs/lora_b_plain.yaml batch_size=128 num_workers=16
 #   (epochs are taken from the config = same horizon as the final k-fold)
@@ -36,4 +36,4 @@ for ov in "${RUNS[@]}"; do
     experiment_name="$name" $ov "${EXTRA[@]}" || echo "FAILED: $name"
   i=$((i + 1))
 done
-echo "done. compare: uv run python scripts/summarize.py --prefix sweep_"
+echo "done. compare: uv run scripts/summarize.py --prefix sweep_"

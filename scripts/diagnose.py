@@ -1,6 +1,6 @@
 """Per-(gender x occlusion-bin) diagnosis of a trained model on the val split.
 
-  uv run python scripts/diagnose.py --experiment-name lora_b_plain
+  uv run scripts/diagnose.py --experiment-name lora_b_plain
 
 Reconstructs the model from its config.json, rebuilds the exact val split
 (same seed / val_split / stratification), and reports where the weighted error

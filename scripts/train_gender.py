@@ -4,9 +4,9 @@ Reuses the occlusion data/model pipeline; only the loss (BCE) and the selection
 metric (accuracy) differ. The trained model is used to identify, at test time,
 the better-predicted gender group for post-hoc score optimisation.
 
-  uv run python scripts/train_gender.py --config configs/gender_b_lora.yaml
-  uv run python scripts/train_gender.py --config configs/gender_b_lora.yaml --debug
-  uv run python scripts/train_gender.py --config configs/gender_b_lora.yaml \
+  uv run scripts/train_gender.py --config configs/gender_b_lora.yaml
+  uv run scripts/train_gender.py --config configs/gender_b_lora.yaml --debug
+  uv run scripts/train_gender.py --config configs/gender_b_lora.yaml \
       --override epochs=10 backbone_lr=1e-4
 """
 from __future__ import annotations
@@ -125,7 +125,7 @@ def main():
 
     print(f"\nbest val acc: {best:.4f} | auc {best_metrics.get('auc'):.4f}"
           f" | prec_g0 {best_metrics.get('prec_g0'):.4f}\nartifacts: {exp_dir}")
-    print("next: uv run python scripts/predict_gender.py --run "
+    print("next: uv run scripts/predict_gender.py --run "
           f"{cfg.experiment_name}")
 
 

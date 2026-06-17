@@ -1,8 +1,8 @@
 """Fast baseline: regression head on frozen DINOv2 embeddings
 (pre-extracted by scripts/extract_embeddings.py). Sanity-check pipeline.
 
-  uv run python scripts/extract_embeddings.py --model-type dinov2_vits14
-  uv run python scripts/train_head.py --experiment-name head_v1 \
+  uv run scripts/extract_embeddings.py --model-type dinov2_vits14
+  uv run scripts/train_head.py --experiment-name head_v1 \
       --model-type dinov2_vits14
 """
 from __future__ import annotations

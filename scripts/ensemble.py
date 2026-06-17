@@ -1,7 +1,7 @@
 """Ensemble submissions by averaging FaceOcclusion per filename.
 
-  uv run python scripts/ensemble.py --glob 'kfold_lora_b_plain_f*'
-  uv run python scripts/ensemble.py --runs lora_b_plain lora_l_plain --method median
+  uv run scripts/ensemble.py --glob 'kfold_lora_b_plain_f*'
+  uv run scripts/ensemble.py --runs lora_b_plain lora_l_plain --method median
 """
 from __future__ import annotations
 

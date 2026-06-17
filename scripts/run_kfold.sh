@@ -9,7 +9,7 @@ CONFIG="$1"; K="$2"; shift 2
 NAME="$(basename "$CONFIG" .yaml)"
 for ((f=0; f<K; f++)); do
   echo "===== fold $f / $K ====="
-  uv run python scripts/train.py --config "$CONFIG" \
+  uv run scripts/train.py --config "$CONFIG" \
     --override experiment_name="kfold_${NAME}_f${f}" n_folds="$K" fold="$f" "$@"
 done
-echo "done. ensemble with: uv run python scripts/ensemble.py --glob 'kfold_${NAME}_f*'"
+echo "done. ensemble with: uv run scripts/ensemble.py --glob 'kfold_${NAME}_f*'"
